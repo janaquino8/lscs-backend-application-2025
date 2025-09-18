@@ -26,7 +26,9 @@ export async function getProductById(id) {
     const [rows] = await pool.query(`
         SELECT * FROM products 
         WHERE id = ?`, 
-        [id]);
+        [id]
+    );
+    
     return rows[0];
 };
 
@@ -37,8 +39,11 @@ export async function createProduct(name, price, description, type) {
     const [result] = await pool.query(`
         INSERT INTO products (name, price, description, type)
         VALUES (?, ?, ?, ?)
-        `, [name, price, description, type]);
-    return getProductById(result.insertId);
+        `, [name, price, description, type]
+    );
+
+    const prod = result.insertId;
+    return getProductById(prod);
 }
 
 /**
@@ -49,8 +54,11 @@ export async function updateProduct(id, name, price, description, type) {
         UPDATE products
         SET ?
         WHERE id = ?        
-        `, [name, price, description, type, id]);
-    return getProductById(result.insertId);
+        `, [name, price, description, type, id]
+    );
+
+    const prod = result.insertId;
+    return getProductById(prod);
 };
 
 /**
@@ -60,6 +68,24 @@ export async function deleteProduct(id) {
     const [result] = await pool.query(`
         DELETE FROM products
         WHERE id = ?
-        `, [id]);
-    return result;
-}
+        `, [id]
+    );
+
+    return result.affectedRows;
+};
+
+
+
+// console.log(await postProduct("jan", 12.345, 'this is ap rodct for lscs', 'electronics'));
+// //console.log(await postProduct("tester", "pl", null, null))
+// console.log(await postProduct("tester", 1, null, null))
+
+// console.log(await getProducts())
+//console.log(await getProductById(0))
+
+/*
+    FIX
+    price type mismatch
+    null is still allowed for description and type
+    invalid id
+*/
