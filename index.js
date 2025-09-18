@@ -1,17 +1,11 @@
 import express from 'express';
+
 const app = express();
 const port = process.env.PORT || 3000;
 
 // declaration of middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-/**
- * @description Starts the API server 
- */
-app.listen(port, () => {
-  console.log(`Products API is live on http://localhost:${port}`);
-});
 
 /**
  * @description POST request to create a new product.
@@ -46,4 +40,11 @@ app.put('/products/:id', (req, res) => {
  */
 app.delete('products/:id', (req, res) => {
 
+});
+
+/**
+ * @description Starts the server.
+ */
+app.listen(port, () => {
+  console.log(`Products API is live on http://localhost:${port}`);
 });
