@@ -27,10 +27,14 @@ async function httpGetProductAll(req, res) {
     const { page = 0, limit = 0 } = req.query;
     const offset = (page - 1) * limit;
 
+    if (offset < 0 || page < 0 || limit < 0 || !Number.isInteger(offset)) {
+        return res.status(400).json({ error: "Invalid query parameters." });
+    }
+
     const prod = await ConnectDB.getProducts(limit, offset);
 
     if (Object.keys(prod).length === 0) {
-        return res.status(400).json({ error: "No results found." })
+        return res.status(400).json({ error: "No results found." });
     }
 
     res.status(200).json(prod);
