@@ -1,6 +1,6 @@
 import mysql from 'mysql2';
 import dotenv from 'dotenv';
-import { isValidId, getValues } from './helper.js';
+import Helper from './helper/helper.js';
 
 dotenv.config(); // configures server information
 
@@ -15,16 +15,21 @@ const pool = mysql.createPool({
 /**
  * @description Executes the query to get all products
  */
-export async function getProducts() {
-    const [rows] = await pool.query("SELECT * FROM products");
+async function getProducts(limit, offset) {
+    const limitQuery = limit === 0 ? `` : `LIMIT ${limit} OFFSET ${offset}`
+
+    const [rows] = await pool.query(`
+        SELECT * FROM products
+        ${limitQuery}`
+    );
     return rows;
 };
 
 /**
  * @description Executes the query to get a product by its id
  */
-export async function getProductById(id) {
-    if (!isValidId(id)) {
+async function getProductById(id) {
+    if (!Helper.isValidId(id)) {
         return null;
     }
 
@@ -40,13 +45,13 @@ export async function getProductById(id) {
 /**
  * @description Executes the query to create and insert a product into the database
  */
-export async function createProduct(data) {
-    const { keys, values, placeholders } = getValues(data);
+async function createProduct(data) {
+    const { keys, values, placeholders } = Helper.getValues(data);
 
     const [result] = await pool.query(
         `INSERT INTO products (${keys.join(', ')}) 
-        VALUES (${placeholders})
-        `, values
+        VALUES (${placeholders})`, 
+        values
     );
 
     const prod = result.insertId;
@@ -56,19 +61,19 @@ export async function createProduct(data) {
 /**
  * @description Executes the query to update attributes of an existing product
  */
-export async function updateProduct(id, data) {
-    if (!isValidId(id)) {
+async function updateProduct(id, data) {
+    if (!Helper.isValidId(id)) {
         return null;
     }
 
-    const { values, placeholders } = getValues(data, { forUpdate: true });
+    const { values, placeholders } = Helper.getValues(data, { forUpdate: true });
     values.push(id);
 
     const [result] = await pool.query(`
         UPDATE products
         SET ${placeholders}
-        WHERE id = ?        
-        `, values
+        WHERE id = ?`, 
+        values
     );
 
     if (result.affectedRows === 0) {
@@ -81,16 +86,19 @@ export async function updateProduct(id, data) {
 /**
  * @description Executes the query to delete a product from the database
  */
-export async function deleteProduct(id) {
-    if (!isValidId(id)) {
+async function deleteProduct(id) {
+    if (!Helper.isValidId(id)) {
         return null;
     }
     
     const [result] = await pool.query(`
         DELETE FROM products
-        WHERE id = ?
-        `, [id]
+        WHERE id = ?`, 
+        [id]
     );
 
     return result.affectedRows;
 };
+
+const ConnectDB = { getProducts, getProductById, createProduct, updateProduct, deleteProduct };
+export default ConnectDB;
